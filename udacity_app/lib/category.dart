@@ -81,7 +81,7 @@ class Category extends StatelessWidget
               style: Theme.of(context).textTheme.display1
             ),
             centerTitle: true,
-            backgroundColor: color[100],
+            backgroundColor: color,
           ),
           body: ConverterScreen(
             name: name,
