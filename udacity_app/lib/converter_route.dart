@@ -26,15 +26,18 @@ class _ConverterRoute extends State<ConverterScreen>
 {
   //TODO: Set some variables, such as for keeping track of the user's input
   // value and units
+  String _convertedOutput;
+  Unit _outUnits;
+  TextEditingController _inputController;
 
   // TODO: Determine weather you need to overide anything, such as initState()
   @override
   void initState() { 
-  
+    _inputController = TextEditingController();
     super.initState();
   }
-  // TODO: Add other helper functions. We've given you one, _format()
 
+  // TODO: Add other helper functions. We've given you one, _format()
   // Clean up conversionl trim trailing zeros, e.g. 5.500 -> 5.5, 10.0 -> 10
   String _format(double conversion)
   {
@@ -57,8 +60,8 @@ class _ConverterRoute extends State<ConverterScreen>
   }
   
   //? creating items to go into the drop down
-  static var _items = <DropdownMenuItem>[];
-  void _createDropdownItems() {
+  List<DropdownMenuItem> _createDropdownItems() {
+    var items = <DropdownMenuItem>[];
     for(int i = 0; i < widget.units.length; i++)
     {
       var item = DropdownMenuItem(
@@ -67,11 +70,35 @@ class _ConverterRoute extends State<ConverterScreen>
           child:Text(widget.units[i].name)
         )
       );
-      _items.add(item);
+      items.add(item);
     }
+    return items;
   }
 
+  Widget _createDropdownMenu() {
+    return Container(
+      margin: EdgeInsets.only(top: 20.0),
+      height: 70.0,
+      decoration: BoxDecoration(
+        border: Border.all()
+      ),
+      child: DropdownButtonHideUnderline(
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: DropdownButton(
+            style: Theme.of(context).textTheme.title,
+            items: _createDropdownItems(),
+            onChanged: null
+          ) 
+        )
+      )
+    );
+  }
 
+  void _convertInput(String input)
+  {
+
+  }
 
   @override
     Widget build(BuildContext context) 
@@ -84,31 +111,17 @@ class _ConverterRoute extends State<ConverterScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           TextField(
+            controller: _inputController,
+            onChanged: _convertInput(_inputController.text),
             keyboardType: TextInputType.number,
             style: Theme.of(context).textTheme.display1,
             decoration: InputDecoration(
             labelText: "Input",
-            border: OutlineInputBorder()
-              
+            errorText: "😂 Please enter a valid number.",
+            border: OutlineInputBorder()   
             ),
           ),
-          Container(
-            height: 70.0,
-            decoration: BoxDecoration(
-              border: Border.all()
-            ),
-            child: DropdownButtonHideUnderline(
-              child: Directionality(
-                textDirection: TextDirection.ltr,
-                child: DropdownButton(
-                  style: Theme.of(context).textTheme.title,
-                  items: _items,
-                  onChanged: null,
-              )
-              )
-            )
-          )
-
+          _createDropdownMenu()
         ]
       )
     );
@@ -118,32 +131,11 @@ class _ConverterRoute extends State<ConverterScreen>
 
       // TODO: Return the input, arrows, and output widgets, wrapped in
 
-      // TODO: Delete the below placeholder code
-      // final unitWidgets = widget.units.map((Unit unit) {
-      //   return Container(
-      //     color: widget.color,
-      //     margin: EdgeInsets.all(8.0),
-      //     padding: EdgeInsets.all(16.0),
-      //     child: Column(
-      //       children: <Widget>[
-      //         Text(
-      //           unit.name,
-      //           style: Theme.of(context).textTheme.headline,
-      //         ),
-      //         Text(
-      //           'Conversion: ${unit.conversion}',
-      //           style: Theme.of(context).textTheme.subhead,
-      //         ),
-      //       ],
-      //     ),
-      //   );
-      // }).toList();
+      return Column(
+        children: <Widget>[
+          _inputGroup,
 
-      // return ListView(
-      //   children: unitWidgets,
-      // );
-      _items.clear();
-      _createDropdownItems();
-      return _inputGroup;
+        ],
+      );  
   }
 }

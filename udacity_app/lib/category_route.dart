@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'category.dart';
 import 'unit.dart';
 
-final _backgroundColor = Colors.teal[100];
+final _backgroundColor = Colors.green[100];
 
 class CategoryScreen extends StatefulWidget
 {
