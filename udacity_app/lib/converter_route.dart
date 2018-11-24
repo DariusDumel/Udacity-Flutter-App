@@ -26,9 +26,11 @@ class _ConverterRoute extends State<ConverterScreen>
 {
   //TODO: Set some variables, such as for keeping track of the user's input
   // value and units
+  double _inputValue;
   String _convertedOutput;
   Unit _outUnits;
   TextEditingController _inputController;
+  bool _invalidInputFlag = false;
 
   // TODO: Determine weather you need to overide anything, such as initState()
   @override
@@ -38,6 +40,35 @@ class _ConverterRoute extends State<ConverterScreen>
   }
 
   // TODO: Add other helper functions. We've given you one, _format()
+
+  // Takes in a string from the textinput field and checks for valid input and format
+  // also updates states to show valid input in output or to deisplay error state.
+  void _updateInputValue(String input)
+  {
+    setState(() {
+          
+    if(input.isEmpty)
+    {
+      _convertedOutput = '';
+    }
+    else
+    {
+      try
+      {
+       final inputDouble = double.parse(input);
+       _inputValue = inputDouble;
+       _invalidInputFlag = false;
+        //update converted output
+      
+      } on Exception catch (e)
+      {
+        print('Error: $e');
+        _invalidInputFlag = true;   
+      }
+    }
+        });
+  }
+
   // Clean up conversionl trim trailing zeros, e.g. 5.500 -> 5.5, 10.0 -> 10
   String _format(double conversion)
   {
@@ -95,10 +126,6 @@ class _ConverterRoute extends State<ConverterScreen>
     );
   }
 
-  void _convertInput(String input)
-  {
-
-  }
 
   @override
     Widget build(BuildContext context) 
@@ -112,12 +139,12 @@ class _ConverterRoute extends State<ConverterScreen>
         children: <Widget>[
           TextField(
             controller: _inputController,
-            onChanged: _convertInput(_inputController.text),
+            onChanged: _updateInputValue,
             keyboardType: TextInputType.number,
             style: Theme.of(context).textTheme.display1,
             decoration: InputDecoration(
             labelText: "Input",
-            errorText: "😂 Please enter a valid number.",
+            errorText: _invalidInputFlag ? "😂 Please enter a valid number." : null,
             border: OutlineInputBorder()   
             ),
           ),
