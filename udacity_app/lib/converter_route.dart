@@ -3,6 +3,8 @@ import 'package:meta/meta.dart';
 
 import 'unit.dart';
 
+const _padding = EdgeInsets.all(16.0);
+
 class ConverterScreen extends StatefulWidget {
   final List<Unit> units;
   final name;
@@ -28,14 +30,17 @@ class _ConverterRoute extends State<ConverterScreen>
   // value and units
   double _inputValue;
   String _convertedOutput;
-  Unit _outUnits;
-  TextEditingController _inputController;
+  Unit _fromValue;
+  Unit _toValue;
+  List<DropdownMenuItem> _unitMenuItems;
   bool _invalidInputFlag = false;
 
   // TODO: Determine weather you need to overide anything, such as initState()
   @override
   void initState() { 
-    _inputController = TextEditingController();
+    _createDropdownItems();
+    _fromValue = widget.units[0];
+    _toValue = widget.units[1];
     super.initState();
   }
 
@@ -91,38 +96,52 @@ class _ConverterRoute extends State<ConverterScreen>
   }
   
   //? creating items to go into the drop down
-  List<DropdownMenuItem> _createDropdownItems() {
+  void _createDropdownItems() {
     var items = <DropdownMenuItem>[];
-    for(int i = 0; i < widget.units.length; i++)
+    for(var unit in widget.units)
     {
-      var item = DropdownMenuItem(
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child:Text(widget.units[i].name)
-        )
-      );
-      items.add(item);
+      items.add(DropdownMenuItem(
+        value: unit.name,
+        child: Container(
+          child: Text(
+            unit.name,
+            softWrap: true,
+          ),
+        ),
+      ));
     }
-    return items;
+    setState(() {
+          _unitMenuItems = items;
+        });
   }
 
   Widget _createDropdownMenu() {
     return Container(
-      margin: EdgeInsets.only(top: 20.0),
-      height: 70.0,
+      margin: EdgeInsets.only(top: 16.0),
       decoration: BoxDecoration(
-        border: Border.all()
+        color: Colors.cyan,
+        border: Border.all(
+          color: Colors.red[400],
+          width: 1.0,
+        ),
       ),
-      child: DropdownButtonHideUnderline(
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: DropdownButton(
-            style: Theme.of(context).textTheme.title,
-            items: _createDropdownItems(),
-            onChanged: null
-          ) 
-        )
-      )
+      padding: EdgeInsets.symmetric(vertical: 8.0),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          canvasColor: Colors.red[50],
+        ), 
+        child: DropdownButtonHideUnderline(
+          child: ButtonTheme(
+            alignedDropdown: true,
+            child: DropdownButton(
+              value: _fromValue.name,
+              style: Theme.of(context).textTheme.title,
+              items: _unitMenuItems,
+              onChanged: null,
+            ),
+          ), 
+        ),
+      ),
     );
   }
 
@@ -131,38 +150,57 @@ class _ConverterRoute extends State<ConverterScreen>
     Widget build(BuildContext context) 
     {
       // TODO: Create the 'input' group of widgets. This is a Column that
-      // includes the output value, and 'from' unit [Dropdown].
-    var _inputGroup = Padding(
-      padding: EdgeInsets.all(16.0),
+      // includes the input value, and 'from' unit [Dropdown].
+    final input = Padding(
+      padding: _padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
+        children: [
           TextField(
-            controller: _inputController,
-            onChanged: _updateInputValue,
-            keyboardType: TextInputType.number,
             style: Theme.of(context).textTheme.display1,
             decoration: InputDecoration(
-            labelText: "Input",
-            errorText: _invalidInputFlag ? "😂 Please enter a valid number." : null,
-            border: OutlineInputBorder()   
+              labelText: "Input",
+              labelStyle: Theme.of(context).textTheme.display1,
+              errorText: _invalidInputFlag ? "😂 Please enter a valid number." : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(0.0)
+              ),
             ),
+
+            onChanged: _updateInputValue,
+            keyboardType: TextInputType.number,
           ),
           _createDropdownMenu()
         ]
       )
     );
-      // TODO: Create a compare arrows icon.
+
+      final arrows = RotatedBox(
+        quarterTurns: 1,
+        child: Icon(
+          Icons.compare_arrows,
+          size: 40.0,
+        ),
+      );
 
       // TODO: Create the 'output' group of widgets. This is a Column that
 
-      // TODO: Return the input, arrows, and output widgets, wrapped in
+      final output = Padding(
+        padding: _padding,
+      );
 
-      return Column(
+      final converter = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          _inputGroup,
-
+          input,
+          arrows,
+          output,
         ],
-      );  
+      );
+
+      return Padding(
+        padding: _padding,
+        child: converter,
+      );
   }
 }

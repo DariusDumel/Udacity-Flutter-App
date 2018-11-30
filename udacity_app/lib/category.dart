@@ -88,6 +88,7 @@ class Category extends StatelessWidget
             units: units,
             color: color
           ),
+          resizeToAvoidBottomPadding: false,
         );
       }));
   }
