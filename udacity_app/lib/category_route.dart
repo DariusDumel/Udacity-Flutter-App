@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'backdrop.dart';
 import 'category.dart';
+import 'category_tile.dart';
 import 'unit.dart';
+import 'unit_converter.dart';
 
 final _backgroundColor = Colors.green[100];
 
@@ -14,8 +17,18 @@ class CategoryScreen extends StatefulWidget
 
 } 
 
+
+/// Category Route (screen).
+///
+/// This is the 'home' screen of the Unit Converter. It shows a header and
+/// a list of [Categories].
+///
+/// While it is named CategoryRoute, a more apt name would be CategoryScreen,
+/// because it is responsible for the UI at the route's destination.
 class _CategoryRouteState extends State<CategoryScreen>
 {
+  Category _defaultCategory;
+  Category _currentCategory;
   static const _appBarTitleText= "Unit Converter";
   static const _categoryNames = <String>[
     'Length',
@@ -27,9 +40,6 @@ class _CategoryRouteState extends State<CategoryScreen>
     'Digital Storage',
     'Currency'
   ];
-
-
-  static const _icons = <Icon>[];
 
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
@@ -72,31 +82,21 @@ class _CategoryRouteState extends State<CategoryScreen>
   @override
   Widget build(BuildContext context)
   {
-    
-    final listView = Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
-      child: _buildCategoryWidgets(_categories)
+    final listView = Padding(
+      padding: EdgeInsets.fromLTRB(8, 0, 8, 48),
+      child: _buildCategoryWidgets(MediaQuery.of(context).orientation)
     );
 
-    final appBar = AppBar(
-      centerTitle: true,
-      title: Text(
-        _appBarTitleText,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 30.0,
-          color: Colors.black
-          ),
-        ),
-      elevation: 0.0,
-      backgroundColor: _backgroundColor,
+    return Backdrop(
+      currentCategory: 
+        _currentCategory == null ? _defaultCategory : _currentCategory,
+      frontPanel: _currentCategory == null
+       ? UnitConverter(category: _defaultCategory) 
+       : UnitConverter(category: _currentCategory,),
+      frontTitle: Text("Unit Converter"),
+      backPanel: listView,
+      backTitle: Text("Choose a Category"),
     );
-
-    return Scaffold(
-      backgroundColor: _backgroundColor,
-      appBar: appBar,
-      body: listView,
-      );
   }
 
   void initState() { 
@@ -112,14 +112,50 @@ class _CategoryRouteState extends State<CategoryScreen>
         units: _retrieveUnitList(_categoryNames[i]),
       ));
     }
+    _defaultCategory = _categories[0];
   }
 
-  Widget _buildCategoryWidgets(List<Widget> categories)
+
+  void _onCategoryTap(Category category)
   {
-    return ListView.builder(
-        itemCount: categories.length,
-        itemBuilder: (BuildContext context, int index) => categories[index]
-    );
+    setState(() {
+          _currentCategory = category;
+        });
+  }
+
+
+  // TODO: Use a GridView for landscape mode, passing in the device orientation
+  /// Makes the correct number of rows for the list view, based on whether the
+  /// device is portrait or landscape.
+  ///
+  /// For portrait, we use a [ListView]. For landscape, we use a [GridView].
+  Widget _buildCategoryWidgets(Orientation deviceOrientation)
+  {
+    if(deviceOrientation == Orientation.portrait)
+    {
+      return ListView.builder(
+        itemBuilder: (BuildContext context, int index)
+        {
+          return CategoryTile(
+            category: _categories[index],
+            onTap: _onCategoryTap,
+          );
+        },
+        itemCount: _categories.length,
+      );
+    } else
+    {
+      return GridView.count(
+        crossAxisCount: 2,
+        childAspectRatio: 3.0,
+        children: _categories.map((Category c) {
+          return CategoryTile(
+            category: c,
+            onTap: _onCategoryTap
+            );
+        }).toList(),
+      );
+    }
   }
 
   /// Returns a list of mock [Unit]s.
