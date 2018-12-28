@@ -14,5 +14,5 @@ class Unit {
   : assert(jsonMap['name'] != null),
     assert(jsonMap['conversion'] != null),
     name = jsonMap['name'],
-    conversion = jsonMap['conersion'];
+    conversion = jsonMap['conversion'].toDouble();
 }

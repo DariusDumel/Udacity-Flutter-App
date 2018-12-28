@@ -1,12 +1,15 @@
+import 'dart:convert';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import 'api.dart';
 import 'backdrop.dart';
 import 'category.dart';
 import 'category_tile.dart';
 import 'unit.dart';
 import 'unit_converter.dart';
 
-final _backgroundColor = Colors.green[100];
 
 class CategoryScreen extends StatefulWidget
 {
@@ -27,19 +30,9 @@ class CategoryScreen extends StatefulWidget
 /// because it is responsible for the UI at the route's destination.
 class _CategoryRouteState extends State<CategoryScreen>
 {
+  Api api = Api();
   Category _defaultCategory;
   Category _currentCategory;
-  static const _appBarTitleText= "Unit Converter";
-  static const _categoryNames = <String>[
-    'Length',
-    'Area',
-    'Volume',
-    'Mass',
-    'Energy',
-    'Time',
-    'Digital Storage',
-    'Currency'
-  ];
 
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
@@ -75,7 +68,19 @@ class _CategoryRouteState extends State<CategoryScreen>
       'splash': Color(0xFFF94D56),
       'error': Color(0xFF912D2D),
     }),
-];
+  ];
+
+  static const _icons = <String>
+  [
+    'assets/icons/length.png',
+    'assets/icons/area.png',
+    'assets/icons/volume.png',
+    'assets/icons/mass.png',
+    'assets/icons/time.png',
+    'assets/icons/digital_storage.png',
+    'assets/icons/power.png',
+    'assets/icons/currency.png'
+  ];
 
   final _categories = <Category>[];
 
@@ -95,26 +100,85 @@ class _CategoryRouteState extends State<CategoryScreen>
        : UnitConverter(category: _currentCategory,),
       frontTitle: Text("Unit Converter"),
       backPanel: listView,
-      backTitle: Text("Choose a Category"),
+      backTitle: Text("Select a Category"),
     );
   }
 
-  void initState() { 
 
-    super.initState();
+   @override
+   Future<void> didChangeDependencies() async {
+     super.didChangeDependencies();
+     // We have static unit conversions located in our
+     // assets/data/regular_units.json
+     if (_categories.isEmpty) {
+       await _retrieveLocalCategories();
+     }
+ }
 
-    for (var i = 0; i < _categoryNames.length; i++) 
-    {
-      _categories.add(Category(
-        name: _categoryNames[i],
-        color: _baseColors[i],
-        iconLocation: Icons.cake,
-        units: _retrieveUnitList(_categoryNames[i]),
-      ));
+  // /// Retrieves a list of [Categories] and their [Unit]s
+  Future<void> _retrieveLocalCategories() async {
+    // Consider omitting the types for local variables. For more details on Effective
+    // Dart Usage, see https://www.dartlang.org/guides/language/effective-dart/usage
+    final json = DefaultAssetBundle
+        .of(context)
+        .loadString('assets/data/regular_units.json');
+    final data = JsonDecoder().convert(await json);
+    if (data is! Map) {
+      throw ('Data retrieved from API is not a Map');
     }
-    _defaultCategory = _categories[0];
+
+    var index = 0;
+    for(var key in data.keys)
+    {
+
+      final List<Unit> units = 
+      data[key].map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
+
+      Category category = Category(
+        name: key,
+        units: units,
+        color: _baseColors[index],
+        iconLocation: _icons[index],
+      );
+
+      setState(() {
+        _categories.add(category);
+        _defaultCategory = _categories[0];
+        });
+        index += 1;
+    }
+
+    _retrieveApiCategory("currency");
   }
 
+  // TODO: Add the Currency Category retrieved from the API, to our _categories
+  /// Retrieves a [Category] and its [Unit]s from an API on the web
+  Future<void> _retrieveApiCategory(String category) async {
+
+
+
+    final jsonUnits = await api.getUnits(category);
+
+    if(jsonUnits != null)
+    {
+      final units = <Unit>[];
+
+      for(var unit in jsonUnits)
+      {
+        units.add(Unit.fromJson(unit));
+      }
+
+      Category apiCategory = Category(
+        name: category[0].toUpperCase() + category.substring(1),
+        units: units,
+        color: _baseColors[_categories.length],
+        iconLocation: _icons[_categories.length]
+      );
+      setState(() {    
+        _categories.add(apiCategory);
+          });
+    }
+  }
 
   void _onCategoryTap(Category category)
   {
@@ -123,11 +187,6 @@ class _CategoryRouteState extends State<CategoryScreen>
         });
   }
 
-
-  // TODO: Use a GridView for landscape mode, passing in the device orientation
-  /// Makes the correct number of rows for the list view, based on whether the
-  /// device is portrait or landscape.
-  ///
   /// For portrait, we use a [ListView]. For landscape, we use a [GridView].
   Widget _buildCategoryWidgets(Orientation deviceOrientation)
   {
@@ -156,17 +215,5 @@ class _CategoryRouteState extends State<CategoryScreen>
         }).toList(),
       );
     }
-  }
-
-  /// Returns a list of mock [Unit]s.
-  List<Unit> _retrieveUnitList(String categoryName)
-  {
-      return List.generate(10, (int i) {
-        i += 1;
-        return Unit(
-          name: '$categoryName Unit $i',
-          conversion: i.toDouble(),
-        );
-      });
   }
 }

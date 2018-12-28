@@ -19,6 +19,19 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
+  assets: 
+    - assets/data/regular_units.json
+    - assets/data/goofy_units.json
+
+    - assets/icons/area.png
+    - assets/icons/currency.png
+    - assets/icons/digital_storage.png
+    - assets/icons/length.png
+    - assets/icons/mass.png
+    - assets/icons/power.png
+    - assets/icons/time.png
+    - assets/icons/volume.png
+  
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -41,6 +54,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  fonts:
+    - family: Raleway
+      fonts:
+        - asset: assets/fonts/Raleway-Regular.ttf
   # fonts:
   #   - family: Schyler
   #     fonts:

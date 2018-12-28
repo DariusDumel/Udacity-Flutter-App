@@ -6,7 +6,7 @@ import 'unit.dart';
 class Category
 {
   final String name;
-  final IconData iconLocation;
+  final String iconLocation;
   final ColorSwatch color;
   final List<Unit> units;
 
